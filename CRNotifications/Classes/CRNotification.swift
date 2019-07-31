@@ -8,11 +8,7 @@
 
 import UIKit
 
-public protocol CRNotification {
-    func hide() -> Void
-}
-
-public class CRNotificationView: UIView, CRNotification {
+internal class CRNotification: UIView {
     
     private let imageView: UIImageView = {
         let view = UIImageView()
@@ -24,7 +20,7 @@ public class CRNotificationView: UIView, CRNotification {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 15, weight: .bold)
+        label.font = UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.bold)
         label.textColor = .white
         return label
     }()
@@ -32,7 +28,7 @@ public class CRNotificationView: UIView, CRNotification {
     private let messageLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 13, weight: UIFont.Weight.semibold)
         label.textColor = .white
         label.numberOfLines = 2
         return label
@@ -86,16 +82,17 @@ public class CRNotificationView: UIView, CRNotification {
         ])
 		
 		NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(lessThanOrEqualTo: titleLabel.superview!.topAnchor, constant: 8),
+            titleLabel.topAnchor.constraint(lessThanOrEqualTo: titleLabel.superview!.topAnchor, constant: 6),
+            titleLabel.topAnchor.constraint(greaterThanOrEqualTo: titleLabel.superview!.topAnchor, constant: 2),
             titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 8),
             titleLabel.trailingAnchor.constraint(equalTo: titleLabel.superview!.trailingAnchor, constant: -8)
         ])
 		
 		NSLayoutConstraint.activate([
-            messageLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
+            messageLabel.topAnchor.constraint(lessThanOrEqualTo: titleLabel.bottomAnchor, constant: 3),
             messageLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             messageLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            messageLabel.bottomAnchor.constraint(lessThanOrEqualTo: messageLabel.superview!.bottomAnchor, constant: -5)
+            messageLabel.bottomAnchor.constraint(lessThanOrEqualTo: messageLabel.superview!.bottomAnchor, constant: -4)
         ])
     }
     
@@ -129,36 +126,36 @@ public class CRNotificationView: UIView, CRNotification {
         titleLabel.textColor = color
         messageLabel.textColor = color
     }
-    
-    /** Sets the title of the notification **/
-    internal func setTitle(title: String) {
-        titleLabel.text = title
-    }
-    
-    /** Sets the message of the notification **/
-    internal func setMessage(message: String) {
-        messageLabel.text = message
-    }
-    
-    /** Sets the image of the notification **/
-    internal func setImage(image: UIImage?) {
-        imageView.image = image
-    }
-    
-    /** Sets the completion block of the notification for when it is dismissed **/
-    internal func setCompletionBlock(_ completion: @escaping () -> ()) {
-        self.completion = completion
-    }
-    
-    /** Dismisses the notification with a delay > 0 **/
-    internal func setDismisTimer(delay: TimeInterval) {
-        if delay > 0 {
-            Timer.scheduledTimer(timeInterval: Double(delay), target: self, selector: #selector(dismissNotification), userInfo: nil, repeats: false)
-        }
-    }
-    
-    /** Animates in the notification **/
-    internal func showNotification() {
+	
+	/** Sets the title of the notification **/
+	internal func setTitle(title: String) {
+		titleLabel.text = title
+	}
+	
+	/** Sets the message of the notification **/
+	internal func setMessage(message: String) {
+		messageLabel.text = message
+	}
+	
+	/** Sets the image of the notification **/
+	internal func setImage(image: UIImage?) {
+		imageView.image = image
+	}
+	
+	/** Sets the completion block of the notification for when it is dismissed **/
+	internal func setCompletionBlock(_ completion: @escaping () -> ()) {
+		self.completion = completion
+	}
+	
+	/** Dismisses the notification with a delay > 0 **/
+	internal func setDismisTimer(delay: TimeInterval) {
+		if delay > 0 {
+			Timer.scheduledTimer(timeInterval: Double(delay), target: self, selector: #selector(dismissNotification), userInfo: nil, repeats: false)
+		}
+	}
+	
+	/** Animates in the notification **/
+	internal func showNotification() {
         UIView.animate(withDuration: 0.3, delay: 0.0, usingSpringWithDamping: 0.68, initialSpringVelocity: 0.1, options: UIView.AnimationOptions(), animations: {
             self.frame.origin.y = self.topInset() + 10
         })
@@ -166,28 +163,6 @@ public class CRNotificationView: UIView, CRNotification {
     
     /** Animates out the notification **/
     @objc internal func dismissNotification() {
-        hide()
-    }
-    
-    private func topInset() -> CGFloat {
-        let iPhoneXInset: CGFloat
-        switch UIApplication.shared.statusBarOrientation {
-        case .landscapeLeft, .landscapeRight:
-            iPhoneXInset = 0
-        case .portrait, .portraitUpsideDown, .unknown:
-            iPhoneXInset = 44
-        @unknown default:
-            iPhoneXInset = 0
-        }
-        
-        let statusBarHeight: CGFloat = UIApplication.shared.statusBarFrame.height
-        return DeviceManager.value(iPhoneX: statusBarHeight == 0 ? iPhoneXInset : statusBarHeight, other: statusBarHeight)
-    }
-    
-    
-    // MARK: - Public
-    
-    public func hide() {
         UIView.animate(withDuration: 0.1, animations: {
             self.frame.origin.y = self.frame.origin.y + 5
         }, completion: {
@@ -199,6 +174,19 @@ public class CRNotificationView: UIView, CRNotification {
                 self?.removeFromSuperview()
             })
         })
+    }
+    
+    private func topInset() -> CGFloat {
+        let iPhoneXInset: CGFloat
+        switch UIApplication.shared.statusBarOrientation {
+        case .landscapeLeft, .landscapeRight:
+            iPhoneXInset = 0
+        case .portrait, .portraitUpsideDown, .unknown:
+            iPhoneXInset = 44
+        }
+        
+        let statusBarHeight: CGFloat = UIApplication.shared.statusBarFrame.height
+        return DeviceManager.value(iPhoneX: statusBarHeight == 0 ? iPhoneXInset : statusBarHeight, other: statusBarHeight)
     }
     
 }
